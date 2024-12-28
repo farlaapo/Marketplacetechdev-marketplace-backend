@@ -50,18 +50,21 @@ func main() {
 	productRepository := gateway.NewProductRepositoryImpl(database)
 	salesRepository := gateway.NewSalesRepository(database)
 	reviewRatingRepository := gateway.NewReviewRatingRepositoryImpl(database)
+	orderRepository := gateway.NewOrderRepository(database)
 
 	//Intialize the service
 	userService := service.NewUserService(userRepository, tokenRepository)
 	productService := service.NewProductService(productRepository, tokenRepository)
 	saleservice := service.NewSalesService(salesRepository, tokenRepository)
 	reviewRatingService := service.NewReviewRatingService(reviewRatingRepository, tokenRepository)
+	orderService := service.NewOrderService(orderRepository, tokenRepository)
 
 	// Initalize controller
 	userController := controller.NewUserController(userService)
 	productController := controller.NewProductController(productService)
 	salesController := controller.NewSalesContriller(saleservice)
 	reviewRatingController := controller.NewReviewRatingController(reviewRatingService)
+	orderController := controller.NewOrderController(orderService)
 
 	// Intialize Gin router
 	r := gin.Default()
@@ -80,6 +83,7 @@ func main() {
 	routes.RegisterProductRoutes(r, *productController, tokenRepository)
 	routes.RegisterSalesRoutes(r, *salesController, tokenRepository)
 	routes.RegisterReviewRatingRoutes(r, *reviewRatingController, tokenRepository)
+	routes.RegisterOrderRoutes(r, *orderController, tokenRepository)
 
 	// Run the server
 	if err := r.Run(":8080"); err != nil {

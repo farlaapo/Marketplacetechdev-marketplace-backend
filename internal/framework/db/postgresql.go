@@ -67,7 +67,7 @@ func CreatTables(db *sql.DB) error {
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     total_sales NUMERIC(15, 2) NOT NULL DEFAULT 0.0,
     total_orders INT NOT NULL DEFAULT 0,
-    order_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
     product_id UUID REFERENCES products(id) ON DELETE CASCADE,
     quantity INT NOT NULL DEFAULT 1,
     total_price NUMERIC(15, 2) NOT NULL,
@@ -78,9 +78,9 @@ func CreatTables(db *sql.DB) error {
 );
 `
 
-// Create review_rating table
+	// Create review_rating table
 
-reviewRatingTable := `CREATE TABLE IF NOT EXISTS review_rating (
+	reviewRatingTable := `CREATE TABLE IF NOT EXISTS review_rating (
 		id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 		product_id UUID REFERENCES products(id) ON DELETE CASCADE,
 		user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -89,6 +89,17 @@ reviewRatingTable := `CREATE TABLE IF NOT EXISTS review_rating (
 		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 
+);`
+
+	// Create Order table
+	OrderTable := `CREATE TABLE IF NOT EXISTS orders (
+		id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+		user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+		product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+		quantity INT NOT NULL,
+		status VARCHAR(50) NOT NULL,
+		ordered_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );`
 
 	// Create tokens table
@@ -129,7 +140,7 @@ reviewRatingTable := `CREATE TABLE IF NOT EXISTS review_rating (
 				PRIMARY KEY (user_id, permission_id)
 			);`
 	// Execute the table creation queries
-	queries := []string{tokenTable, userRoleTable, roleTable, permissionTable, userPermissionTable, userTable, productTable, SalesManagement, reviewRatingTable}
+	queries := []string{tokenTable, userRoleTable, roleTable, permissionTable, userPermissionTable, userTable, productTable, SalesManagement, reviewRatingTable, OrderTable}
 	for _, query := range queries {
 		if _, err := db.Exec(query); err != nil {
 			return fmt.Errorf("failed to created all tables")
