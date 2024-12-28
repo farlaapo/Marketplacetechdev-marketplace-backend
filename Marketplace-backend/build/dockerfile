@@ -1,0 +1,38 @@
+# Stage 1: Build the Go application
+FROM golang:1.23-alpine AS build
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy Go modules files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy the entire project source code into the container
+COPY . .
+
+# Build the Go application
+RUN go build -o /app/marketplace-backend ./cmd/server
+
+# Verify the binary exists (for debugging)
+RUN ls -l /app/marketplace-backend
+
+# Stage 2: Create a lightweight container to run the application
+FROM alpine:latest
+
+# Install necessary libraries for running Go
+RUN apk --no-cache add ca-certificates
+
+# Set the working directory inside the final container
+WORKDIR /root/
+
+# Copy the built application from the `build` stage
+COPY --from=build /app/marketplace-backend .
+
+# Expose port 8080 to the outside world
+EXPOSE 8080
+
+# Command to run the application
+CMD ["./marketplace-backend"]
