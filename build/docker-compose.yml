@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17.2-alpine
+    container_name: market_place_backend_postgres
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: newpassword
+      POSTGRES_DB: market_place_backend
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d  # Mount the init.sql script
+    networks:
+      - market_place_backend_network
+
+  app:
+    build:
+      context: ..
+      dockerfile: build/Dockerfile
+    container_name: marketplace-backend_app
+    environment:
+      DB_HOST: postgres  # Name of the PostgreSQL service
+      DB_PORT: 5432
+      DB_USER: root
+      DB_PASSWORD: newpassword
+      DB_NAME: market_place_backend
+      DB_SSLMODE: disable
+    volumes:
+      - ../pkg/config/.env:/app/.env  # Ensure this path is correct
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    networks:
+      - market_place_backend_network
+    command: ["./marketplace-backend"]
+    
+
+volumes:
+  postgres_data:
+
+
+networks:
+  market_place_backend_network:  # The only network you need
+    driver: bridge
+
